@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"golang.org/x/sys/unix"
 )
 
 type StringSet map[string]bool
@@ -38,4 +39,11 @@ func RelativeSymlinkTargetToDir(symPath string, dir string) (string, error) {
 	}
 
 	return path, nil
+}
+
+func FreeSpace(path string) (uint64, error) {
+	var stat unix.Statfs_t
+	unix.Statfs(path, &stat)
+	size := stat.Bavail * uint64(stat.Bsize)
+	return size, nil
 }
