@@ -15,7 +15,6 @@ import (
 	"crypto/sha256"
 	"github.com/cavaliercoder/go-cpio"
 	"github.com/klauspost/pgzip"
-	"github.com/google/renameio"
 	"gitlab.com/postmarketOS/mkinitfs/pkgs/misc"
 )
 
@@ -215,7 +214,12 @@ func extract(path string, dest string) error {
 
 func (archive *Archive) writeCompressed(path string, mode os.FileMode) error {
 	// TODO: support other compression formats, based on deviceinfo
-	gz, err := pgzip.NewWriterLevel(tFile, flate.BestSpeed)
+	fd, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
+	gz, err := pgzip.NewWriterLevel(fd, flate.BestSpeed)
 	if err != nil {
 		return err
 	}
@@ -228,7 +232,8 @@ func (archive *Archive) writeCompressed(path string, mode os.FileMode) error {
 		return err
 	}
 
-	if err := tFile.CloseAtomicallyReplace(); err != nil {
+	// call fsync just to be sure
+	if err := fd.Sync(); err != nil {
 		return err
 	}
 
