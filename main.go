@@ -527,7 +527,7 @@ func generateInitSh(templatePath string, outPath string, devinfo deviceinfo.Devi
 	defer outFile.Close()
 
 	if err := os.Chmod(outPath, 0755); err != nil {
-		log.Print("Unable to make %q executable", outPath)
+		log.Printf("Unable to make %q executable", outPath)
 		return err
 	}
 
@@ -621,6 +621,7 @@ func generateInitfs(name string, path string, kernVer string, devinfo deviceinfo
 		return err
 	}
 
+	log.Println("- Writing and verifying initramfs archive")
 	if err := initfsArchive.Write(filepath.Join(path, name), os.FileMode(0644)); err != nil {
 		return err
 	}
@@ -638,6 +639,7 @@ func generateInitfsExtra(name string, path string, devinfo deviceinfo.DeviceInfo
 		return err
 	}
 
+	log.Println("- Writing and verifying initramfs-extra archive")
 	if err := initfsExtraArchive.Write(filepath.Join(path, name), os.FileMode(0644)); err != nil {
 		return err
 	}
