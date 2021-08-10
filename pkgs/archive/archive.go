@@ -4,11 +4,12 @@ package archive
 
 import (
 	"bytes"
+	"io"
 	"log"
 	"os"
 	"strings"
-	"io"
 	"encoding/hex"
+	"io/ioutil"
 	"path/filepath"
 	"compress/flate"
 	"crypto/sha256"
@@ -169,13 +170,50 @@ func (archive *Archive) AddFile(file string, dest string) error {
 	return nil
 }
 
-func (archive *Archive) writeCompressed(path string, mode os.FileMode) error {
-	tFile, err := renameio.TempFile("", path)
+func extract(path string, dest string) error {
+	tDir, err := ioutil.TempDir("", "archive-extract")
 	if err != nil {
 		return err
 	}
-	defer tFile.Cleanup()
+	defer os.RemoveAll(tDir)
 
+	srcFd, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer srcFd.Close()
+
+	// TODO: support more compression types
+	gz, err := pgzip.NewReader(srcFd)
+
+	cpioArchive := cpio.NewReader(gz)
+	for {
+		hdr, err := cpioArchive.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		destPath := filepath.Join(dest, hdr.Name)
+		if hdr.Mode.IsDir() {
+			os.MkdirAll(destPath, 0755)
+		} else {
+			destFd, err := os.Create(destPath)
+			if err != nil {
+				return err
+			}
+			defer destFd.Close()
+			if _, err := io.Copy(destFd, cpioArchive); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (archive *Archive) writeCompressed(path string, mode os.FileMode) error {
 	// TODO: support other compression formats, based on deviceinfo
 	gz, err := pgzip.NewWriterLevel(tFile, flate.BestSpeed)
 	if err != nil {
