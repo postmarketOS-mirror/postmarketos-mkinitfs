@@ -17,7 +17,7 @@ import (
 	"crypto/sha256"
 	"github.com/cavaliercoder/go-cpio"
 	"github.com/klauspost/pgzip"
-	"gitlab.com/postmarketOS/mkinitfs/pkgs/misc"
+	"gitlab.com/postmarketOS/postmarketos-mkinitfs/pkgs/misc"
 )
 
 type Archive struct {
