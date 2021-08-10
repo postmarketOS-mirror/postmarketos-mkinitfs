@@ -8,8 +8,10 @@ import (
 	"os"
 	"strings"
 	"io"
+	"encoding/hex"
 	"path/filepath"
 	"compress/flate"
+	"crypto/sha256"
 	"github.com/cavaliercoder/go-cpio"
 	"github.com/klauspost/pgzip"
 	"github.com/google/renameio"
@@ -50,6 +52,38 @@ func (archive *Archive) Write(path string, mode os.FileMode) error {
 	}
 
 	return nil
+}
+
+func checksum(path string) (string, error) {
+	var sum string
+
+	buf := make([]byte, 64*1024)
+	sha256 := sha256.New()
+	fd, err := os.Open(path)
+	defer fd.Close()
+
+	if err != nil {
+		log.Print("Unable to checksum: ", path)
+		return sum, err
+	}
+
+	// Read file in chunks
+	for {
+		bytes, err := fd.Read(buf)
+		if bytes > 0 {
+			_, err := sha256.Write(buf[:bytes])
+			if err != nil {
+				log.Print("Unable to checksum: ", path)
+				return sum, err
+			}
+		}
+
+		if err == io.EOF {
+			break
+		}
+	}
+	sum = hex.EncodeToString(sha256.Sum(nil))
+	return sum, nil
 }
 
 func (archive *Archive) AddFile(file string, dest string) error {
