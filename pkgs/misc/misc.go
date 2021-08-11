@@ -3,10 +3,10 @@
 package misc
 
 import (
+	"golang.org/x/sys/unix"
 	"log"
 	"os"
 	"path/filepath"
-	"golang.org/x/sys/unix"
 )
 
 type StringSet map[string]bool
