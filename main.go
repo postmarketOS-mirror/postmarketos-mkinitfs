@@ -6,10 +6,8 @@ import (
 	"bufio"
 	"bytes"
 	"debug/elf"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"hash/crc32"
 	"io"
 	"io/ioutil"
 	"log"
@@ -83,26 +81,6 @@ func exists(file string) bool {
 		return true
 	}
 	return false
-}
-
-func checksumFile(file string) (string, error) {
-	checksum := ""
-
-	fd, err := os.Open(file)
-	if err != nil {
-		return checksum, err
-	}
-	defer fd.Close()
-	// Castagnoli's polynomial
-	polyTable := crc32.MakeTable(0x82f63b78)
-	hash := crc32.New(polyTable)
-	if _, err := io.Copy(hash, fd); err != nil {
-		return checksum, err
-	}
-	hashBytes := hash.Sum(nil)[:]
-	checksum = hex.EncodeToString(hashBytes)
-
-	return checksum, nil
 }
 
 func getHookFiles(filesdir string) misc.StringSet {
@@ -598,6 +576,7 @@ func generateInitfs(name string, path string, kernVer string, devinfo deviceinfo
 	if err := getInitfsModules(initfsArchive.Files, devinfo, kernVer); err != nil {
 		return err
 	}
+
 	// init.sh is generated
 	initshTempDir, err := ioutil.TempDir("", "initfs")
 	if err != nil {
