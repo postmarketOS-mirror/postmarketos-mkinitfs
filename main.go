@@ -110,22 +110,6 @@ func getHookFiles(filesdir string) misc.StringSet {
 	return files
 }
 
-func appendUnique(slice []string, item string) []string {
-	for _, s := range slice {
-		if s == item {
-			return slice
-		}
-	}
-	return append(slice, item)
-}
-
-func appendSliceUnique(dest []string, source []string) []string {
-	for _, s := range source {
-		dest = appendUnique(dest, s)
-	}
-	return dest
-}
-
 // Recursively list all dependencies for a given ELF binary
 func getBinaryDeps(files misc.StringSet, file string) error {
 	// if file is a symlink, resolve dependencies for target
