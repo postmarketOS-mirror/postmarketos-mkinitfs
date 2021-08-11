@@ -599,8 +599,13 @@ func generateInitfs(name string, path string, kernVer string, devinfo deviceinfo
 		return err
 	}
 	// init.sh is generated
-	// TODO: make a temp dir for this (mktemp)...
-	initsh := "/tmp/cpio/initfs"
+	initshTempDir, err := ioutil.TempDir("", "initfs")
+	if err != nil {
+		log.Print("Unable to make temp dir for generating init.sh")
+		return err
+	}
+	defer os.RemoveAll(initshTempDir)
+	initsh := filepath.Join(initshTempDir, "init")
 	generateInitSh("/usr/share/postmarketos-mkinitfs/init.sh.in", initsh, devinfo)
 	if err := initfsArchive.AddFile(initsh, "/init"); err != nil {
 		return err
