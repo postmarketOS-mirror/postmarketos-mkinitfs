@@ -4,36 +4,36 @@ package archive
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
-	"io"
-	"log"
-	"os"
-	"strings"
-	"encoding/hex"
-	"io/ioutil"
-	"path/filepath"
 	"compress/flate"
 	"crypto/sha256"
+	"encoding/hex"
+	"errors"
+	"fmt"
 	"github.com/cavaliercoder/go-cpio"
 	"github.com/klauspost/pgzip"
 	"gitlab.com/postmarketOS/postmarketos-mkinitfs/pkgs/misc"
+	"io"
+	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 type Archive struct {
-	Dirs   misc.StringSet
-	Files  misc.StringSet
+	Dirs       misc.StringSet
+	Files      misc.StringSet
 	cpioWriter *cpio.Writer
-	buf  *bytes.Buffer
+	buf        *bytes.Buffer
 }
 
 func New() (*Archive, error) {
 	buf := new(bytes.Buffer)
 	archive := &Archive{
 		cpioWriter: cpio.NewWriter(buf),
-		Files:  make(misc.StringSet),
-		Dirs:   make(misc.StringSet),
-		buf: buf,
+		Files:      make(misc.StringSet),
+		Dirs:       make(misc.StringSet),
+		buf:        buf,
 	}
 
 	return archive, nil
