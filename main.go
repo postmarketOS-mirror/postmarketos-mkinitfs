@@ -44,20 +44,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	kernFlavor, err := getKernelFlavor()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Print("Generating for kernel version: ", kernVer)
-	log.Print("Generating for kernel flavor: ", kernFlavor)
 	log.Print("Output directory: ", outDir)
 
-	if err := generateInitfs("initramfs-"+kernFlavor, outDir, kernVer, devinfo); err != nil {
+	if err := generateInitfs("initramfs", outDir, kernVer, devinfo); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := generateInitfsExtra("initramfs-"+kernFlavor+"-extra", outDir, devinfo); err != nil {
+	if err := generateInitfsExtra("initramfs-extra", outDir, devinfo); err != nil {
 		log.Fatal(err)
 	}
 
@@ -524,19 +522,6 @@ func getKernelVersion() (string, error) {
 	}
 
 	return strings.TrimSpace(string(contents)), nil
-}
-
-func getKernelFlavor() (string, error) {
-	var flavor string
-
-	releaseFile, err := getKernelReleaseFile()
-	if err != nil {
-		return flavor, err
-	}
-
-	// path of release file is in the form: /usr/share/kernel/<flavor>/kernel.release
-	flavor = filepath.Base(filepath.Dir(releaseFile))
-	return flavor, nil
 }
 
 func generateInitfs(name string, path string, kernVer string, devinfo deviceinfo.DeviceInfo) error {
