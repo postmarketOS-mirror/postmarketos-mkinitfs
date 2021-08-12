@@ -4,11 +4,9 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"debug/elf"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -452,52 +450,6 @@ func getInitfsModules(files misc.StringSet, devinfo deviceinfo.DeviceInfo, kerne
 	return nil
 }
 
-func generateInitSh(templatePath string, outPath string, devinfo deviceinfo.DeviceInfo) error {
-	// TODO: this function not needed if/when init is a binary
-	kernFlavor, err := getKernelFlavor()
-	if err != nil {
-		return err
-	}
-
-	placeholderTable := map[string]string{
-		"@INITRAMFS_EXTRA@": "/boot/initramfs-" + kernFlavor + "-extra",
-	}
-
-	var buf bytes.Buffer
-	// open template
-	templateFile, err := os.Open(templatePath)
-	if err != nil {
-		return err
-	}
-	defer templateFile.Close()
-
-	s := bufio.NewScanner(templateFile)
-	for s.Scan() {
-		line := s.Text()
-		for p := range placeholderTable {
-			line = strings.ReplaceAll(line, p, placeholderTable[p])
-		}
-		buf.Write([]byte(line + "\n"))
-	}
-
-	outFile, err := os.Create(outPath)
-	if err != nil {
-		return err
-	}
-	defer outFile.Close()
-
-	if err := os.Chmod(outPath, 0755); err != nil {
-		log.Printf("Unable to make %q executable", outPath)
-		return err
-	}
-
-	if _, err = io.Copy(outFile, &buf); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func getKernelReleaseFile() (string, error) {
 	files, _ := filepath.Glob("/usr/share/kernel/*/kernel.release")
 	// only one kernel flavor supported
@@ -524,6 +476,7 @@ func getKernelVersion() (string, error) {
 	return strings.TrimSpace(string(contents)), nil
 }
 
+
 func generateInitfs(name string, path string, kernVer string, devinfo deviceinfo.DeviceInfo) error {
 	initfsArchive, err := archive.New()
 	if err != nil {
@@ -546,16 +499,7 @@ func generateInitfs(name string, path string, kernVer string, devinfo deviceinfo
 		return err
 	}
 
-	// init.sh is generated
-	initshTempDir, err := ioutil.TempDir("", "initfs")
-	if err != nil {
-		log.Print("Unable to make temp dir for generating init.sh")
-		return err
-	}
-	defer os.RemoveAll(initshTempDir)
-	initsh := filepath.Join(initshTempDir, "init")
-	generateInitSh("/usr/share/postmarketos-mkinitfs/init.sh.in", initsh, devinfo)
-	if err := initfsArchive.AddFile(initsh, "/init"); err != nil {
+	if err := initfsArchive.AddFile("/usr/share/postmarketos-mkinitfs/init.sh", "/init"); err != nil {
 		return err
 	}
 
