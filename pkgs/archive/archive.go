@@ -11,9 +11,9 @@ import (
 	"github.com/klauspost/pgzip"
 	"gitlab.com/postmarketOS/postmarketos-mkinitfs/pkgs/misc"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -46,22 +46,15 @@ func (archive *Archive) Write(path string, mode os.FileMode) error {
 		return err
 	}
 
-	tmpExtractDir, err := ioutil.TempDir("", filepath.Base(path))
-	if err != nil {
-		log.Print("Unable to create temporary work dir")
-		return err
-	}
-	defer os.RemoveAll(tmpExtractDir)
-
 	// Write archive to path
 	if err := archive.writeCompressed(path, mode); err != nil {
 		log.Print("Unable to write archive to location: ", path)
 		return err
 	}
 
-	// Extract the archive to make sure it's valid / can be extracted
-	if err := extract(path, tmpExtractDir); err != nil {
-		log.Print("Extraction verification of archive failed!")
+	// test the archive to make sure it's valid
+	if err := test(path); err != nil {
+		log.Print("Verification of archive failed!")
 		return err
 	}
 
@@ -187,44 +180,14 @@ func (archive *Archive) AddFile(file string, dest string) error {
 	return nil
 }
 
-func extract(path string, dest string) error {
-	tDir, err := ioutil.TempDir("", "archive-extract")
-	if err != nil {
+// Use busybox gzip to test archive
+func test(path string) error {
+	cmd := exec.Command("busybox", "gzip", "-t", path)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		log.Print("'boot-deploy' command failed: ")
 		return err
-	}
-	defer os.RemoveAll(tDir)
-
-	srcFd, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer srcFd.Close()
-
-	// TODO: support more compression types
-	gz, err := pgzip.NewReader(srcFd)
-
-	cpioArchive := cpio.NewReader(gz)
-	for {
-		hdr, err := cpioArchive.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-		destPath := filepath.Join(dest, hdr.Name)
-		if hdr.Mode.IsDir() {
-			os.MkdirAll(destPath, 0755)
-		} else {
-			destFd, err := os.Create(destPath)
-			if err != nil {
-				return err
-			}
-			defer destFd.Close()
-			if _, err := io.Copy(destFd, cpioArchive); err != nil {
-				return err
-			}
-		}
 	}
 
 	return nil
