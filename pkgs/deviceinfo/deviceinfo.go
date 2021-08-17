@@ -3,8 +3,8 @@
 package deviceinfo
 
 import (
+	"errors"
 	"github.com/BurntSushi/toml"
-	"log"
 	"os"
 )
 
@@ -37,16 +37,17 @@ type DeviceInfo struct {
 	Deviceinfo_flash_kernel_on_update          string
 }
 
-func ReadDeviceinfo() DeviceInfo {
+func ReadDeviceinfo() (DeviceInfo, error) {
 	file := "/etc/deviceinfo"
+	var deviceinfo DeviceInfo
+
 	_, err := os.Stat(file)
 	if err != nil {
-		log.Fatal("Unable to find deviceinfo: ", file)
+		return deviceinfo, errors.New("Unable to find deviceinfo: " + file)
 	}
 
-	var deviceinfo DeviceInfo
 	if _, err := toml.DecodeFile(file, &deviceinfo); err != nil {
-		log.Fatal(err)
+		return deviceinfo, err
 	}
-	return deviceinfo
+	return deviceinfo, nil
 }
