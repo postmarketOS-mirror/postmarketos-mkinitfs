@@ -72,6 +72,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Final processing of initramfs / kernel is done by boot-deploy
+	if err := bootDeploy(workDir, outDir); err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 func bootDeploy(workDir string, outDir string) error {
