@@ -52,14 +52,21 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// temporary working dir
+	workDir, err := ioutil.TempDir("", "mkinitfs")
+	if err != nil {
+		log.Fatal("Unable to create temporary work directory:", err)
+	}
+	defer os.RemoveAll(workDir)
+
 	log.Print("Generating for kernel version: ", kernVer)
 	log.Print("Output directory: ", outDir)
 
-	if err := generateInitfs("initramfs", outDir, kernVer, devinfo); err != nil {
+	if err := generateInitfs("initramfs", workDir, kernVer, devinfo); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := generateInitfsExtra("initramfs-extra", outDir, devinfo); err != nil {
+	if err := generateInitfsExtra("initramfs-extra", workDir, devinfo); err != nil {
 		log.Fatal(err)
 	}
 
@@ -481,7 +488,6 @@ func getKernelVersion() (string, error) {
 
 	return strings.TrimSpace(string(contents)), nil
 }
-
 
 func generateInitfs(name string, path string, kernVer string, devinfo deviceinfo.DeviceInfo) error {
 	initfsArchive, err := archive.New()
