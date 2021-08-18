@@ -35,13 +35,13 @@ func main() {
 	}
 
 	var outDir string
-	getopt.StringVar(&outDir, "d", "/boot", "Directory to output initfs(-extra), default: /boot")
+	getopt.StringVar(&outDir, "d", "/boot", "Directory to output initfs(-extra) and other boot files, default: /boot")
 
 	if err := getopt.Parse(); err != nil {
 		log.Fatal(err)
 	}
 
-	defer timeFunc(time.Now(), "main")
+	defer timeFunc(time.Now(), "mkinitfs")
 
 	kernVer, err := getKernelVersion()
 	if err != nil {
