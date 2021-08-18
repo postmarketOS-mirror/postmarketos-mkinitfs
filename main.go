@@ -7,9 +7,11 @@ import (
 	"debug/elf"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -70,6 +72,52 @@ func main() {
 		log.Fatal(err)
 	}
 
+}
+
+func bootDeploy(workDir string, outDir string) error {
+	// boot-deploy expects the kernel to be in the same dir as initramfs.
+	// Assume that the kernel is in the output dir...
+	log.Print("== Using boot-deploy to finalize/install files ==")
+	kernels, _ := filepath.Glob(filepath.Join(outDir, "vmlinuz*"))
+	if len(kernels) == 0 {
+		return errors.New("Unable to find any kernels at " + filepath.Join(outDir, "vmlinuz*"))
+	}
+	kernFile, err := os.Open(kernels[0])
+	if err != nil {
+		return err
+	}
+	defer kernFile.Close()
+
+	kernFileCopy, err := os.Create(filepath.Join(workDir, "vmlinuz"))
+	if err != nil {
+		return err
+	}
+
+	if _, err = io.Copy(kernFileCopy, kernFile); err != nil {
+		return err
+	}
+	kernFileCopy.Close()
+
+	// boot-deploy -i initramfs -k vmlinuz-postmarketos-rockchip -d /tmp/cpio -o /tmp/foo initramfs-extra
+	cmd := exec.Command("boot-deploy",
+		"-i", "initramfs",
+		"-k", "vmlinuz",
+		"-d", workDir,
+		"-o", outDir,
+		"initramfs-extra")
+	if !exists(cmd.Path) {
+		return errors.New("boot-deploy command not found.")
+	}
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	// err is ignored, since shellcheck will return != 0 if there are issues
+	if err := cmd.Run(); err != nil {
+		log.Print("'boot-deploy' command failed: ")
+		return err
+	}
+
+	return nil
 }
 
 func createInitfsRootDirs(initfsRoot string) {
