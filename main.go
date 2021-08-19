@@ -636,8 +636,46 @@ func getModulesInDir(files misc.StringSet, modPath string) error {
 }
 
 // Given a module name, e.g. 'dwc_wdt', resolve the full path to the module
-// file and all of its dependencies
+// file and all of its dependencies.
+// Note: it's not necessarily fatal if the module is not found, since it may
+// have been built into the kernel
+// TODO: look for it in modules.builtin, and make it fatal if it can't be found
+// anywhere
 func getModule(files misc.StringSet, modName string, modDir string) error {
+
+	deps, err := getModuleDeps(modName, modDir)
+	if err != nil {
+		return err
+	}
+
+	if len(deps) == 0 {
+		// retry and swap - and _ in module name
+		if strings.Contains(modName, "-") {
+			modName = strings.ReplaceAll(modName, "-", "_")
+		} else {
+			modName = strings.ReplaceAll(modName, "_", "-")
+		}
+		deps, err = getModuleDeps(modName, modDir)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, dep := range deps {
+		p := filepath.Join(modDir, dep)
+		if !exists(p) {
+			log.Print(fmt.Sprintf("Tried to include a module that doesn't exist in the modules directory (%s): %s", modDir, p))
+			return err
+		}
+		files[p] = false
+	}
+
+	return err
+}
+
+func getModuleDeps(modName string, modDir string) ([]string, error) {
+	var deps []string
+
 	modDep := filepath.Join(modDir, "modules.dep")
 	if !exists(modDep) {
 		log.Fatal("Kernel module.dep not found: ", modDir)
@@ -646,8 +684,9 @@ func getModule(files misc.StringSet, modName string, modDir string) error {
 	fd, err := os.Open(modDep)
 	if err != nil {
 		log.Print("Unable to open modules.dep: ", modDep)
-		return err
+		return deps, err
 	}
+
 	defer fd.Close()
 	s := bufio.NewScanner(fd)
 	for s.Scan() {
@@ -657,18 +696,13 @@ func getModule(files misc.StringSet, modName string, modDir string) error {
 			continue
 		}
 		for _, modPath := range fields {
-			p := filepath.Join(modDir, modPath)
-			if !exists(p) {
-				log.Print(fmt.Sprintf("Tried to include a module that doesn't exist in the modules directory (%s): %s", modDir, p))
-				return err
-			}
-			files[p] = false
+			deps = append(deps, modPath)
 		}
 	}
 	if err := s.Err(); err != nil {
 		log.Print("Unable to get module + dependencies: ", modName)
-		return err
+		return deps, err
 	}
 
-	return err
+	return deps, nil
 }
