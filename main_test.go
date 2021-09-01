@@ -15,6 +15,7 @@ func TestStripExts(t *testing.T) {
 		{"file.tar.gz.xz.zip", "file"},
 		{"another_file", "another_file"},
 		{"a.b.c.d.e.f.g.h.i", "a"},
+		{"virtio_blk.ko", "virtio_blk"},
 	}
 	for _, table := range tables {
 		out := stripExts(table.in)

@@ -614,7 +614,7 @@ func stripExts(file string) string {
 		if filepath.Ext(file) == "" {
 			break
 		}
-		file = strings.Trim(file, filepath.Ext(file))
+		file = strings.TrimSuffix(file, filepath.Ext(file))
 	}
 	return file
 }
