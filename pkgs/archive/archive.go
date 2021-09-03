@@ -13,7 +13,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -49,12 +48,6 @@ func (archive *Archive) Write(path string, mode os.FileMode) error {
 	// Write archive to path
 	if err := archive.writeCompressed(path, mode); err != nil {
 		log.Print("Unable to write archive to location: ", path)
-		return err
-	}
-
-	// test the archive to make sure it's valid
-	if err := test(path); err != nil {
-		log.Print("Verification of archive failed!")
 		return err
 	}
 
@@ -176,19 +169,6 @@ func (archive *Archive) AddFile(file string, dest string) error {
 	}
 
 	archive.Files[file] = true
-
-	return nil
-}
-
-// Use busybox gzip to test archive
-func test(path string) error {
-	cmd := exec.Command("busybox", "gzip", "-t", path)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		log.Print("'boot-deploy' command failed: ")
-		return err
-	}
 
 	return nil
 }
