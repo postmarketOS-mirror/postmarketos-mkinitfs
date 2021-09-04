@@ -611,13 +611,7 @@ func generateInitfsExtra(name string, path string, devinfo deviceinfo.DeviceInfo
 }
 
 func stripExts(file string) string {
-	for {
-		if filepath.Ext(file) == "" {
-			break
-		}
-		file = strings.TrimSuffix(file, filepath.Ext(file))
-	}
-	return file
+	return strings.Split(file, ".")[0]
 }
 
 func getModulesInDir(files misc.StringSet, modPath string) error {
