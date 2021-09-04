@@ -64,12 +64,11 @@ func checksum(path string) (string, error) {
 	buf := make([]byte, 64*1024)
 	sha256 := sha256.New()
 	fd, err := os.Open(path)
-	defer fd.Close()
-
 	if err != nil {
 		log.Print("Unable to checksum: ", path)
 		return sum, err
 	}
+	defer fd.Close()
 
 	// Read file in chunks
 	for {
