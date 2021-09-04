@@ -66,16 +66,16 @@ func main() {
 	log.Print("Output directory: ", outDir)
 
 	if err := generateInitfs("initramfs", workDir, kernVer, devinfo); err != nil {
-		log.Fatal(err)
+		log.Fatal("generateInitfs: ", err)
 	}
 
 	if err := generateInitfsExtra("initramfs-extra", workDir, devinfo); err != nil {
-		log.Fatal(err)
+		log.Fatal("generateInitfsExtra: ", err)
 	}
 
 	// Final processing of initramfs / kernel is done by boot-deploy
 	if err := bootDeploy(workDir, outDir); err != nil {
-		log.Fatal(err)
+		log.Fatal("bootDeploy: ", err)
 	}
 
 }
@@ -117,9 +117,8 @@ func bootDeploy(workDir string, outDir string) error {
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	// err is ignored, since shellcheck will return != 0 if there are issues
 	if err := cmd.Run(); err != nil {
-		log.Print("'boot-deploy' command failed: ")
+		log.Print("'boot-deploy' command failed")
 		return err
 	}
 
