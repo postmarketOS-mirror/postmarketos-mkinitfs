@@ -137,6 +137,9 @@ func (archive *Archive) AddFile(file string, dest string) error {
 		// make sure target is an absolute path
 		if !filepath.IsAbs(target) {
 			target, err = misc.RelativeSymlinkTargetToDir(target, filepath.Dir(file))
+			if err != nil {
+				return err
+			}
 		}
 		// TODO: add verbose mode, print stuff like this:
 		// log.Printf("symlink: %q, target: %q", file, target)
