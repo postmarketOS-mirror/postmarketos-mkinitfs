@@ -1,5 +1,6 @@
 // Copyright 2021 Clayton Craft <clayton@craftyguy.net>
 // SPDX-License-Identifier: GPL-3.0-or-later
+
 package archive
 
 import (
