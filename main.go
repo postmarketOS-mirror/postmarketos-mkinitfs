@@ -360,13 +360,13 @@ func getFdeFiles(files misc.StringSet, devinfo deviceinfo.DeviceInfo) error {
 	}
 
 	// mesa hw accel
-	if devinfo.Deviceinfo_mesa_driver != "" {
+	if devinfo.MesaDriver != "" {
 		mesaFiles := misc.StringSet{
 			"/usr/lib/libEGL.so.1":    false,
 			"/usr/lib/libGLESv2.so.2": false,
 			"/usr/lib/libgbm.so.1":    false,
 			"/usr/lib/libudev.so.1":   false,
-			"/usr/lib/xorg/modules/dri/" + devinfo.Deviceinfo_mesa_driver + "_dri.so": false,
+			"/usr/lib/xorg/modules/dri/" + devinfo.MesaDriver + "_dri.so": false,
 		}
 		if err := getFiles(files, mesaFiles, true); err != nil {
 			return err
@@ -489,7 +489,7 @@ func getInitfsModules(files misc.StringSet, devinfo deviceinfo.DeviceInfo, kerne
 	}
 
 	// deviceinfo modules
-	for _, module := range strings.Fields(devinfo.Deviceinfo_modules_initfs) {
+	for _, module := range strings.Fields(devinfo.ModulesInitfs) {
 		if err := getModule(files, module, modDir); err != nil {
 			log.Print("Unable to get modules from deviceinfo")
 			return err

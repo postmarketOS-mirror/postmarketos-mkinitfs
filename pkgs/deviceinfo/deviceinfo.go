@@ -5,37 +5,37 @@ package deviceinfo
 
 import (
 	"errors"
-	"github.com/BurntSushi/toml"
+	toml "github.com/pelletier/go-toml/v2"
 	"os"
 )
 
 // Note: fields must be exported (start with capital letter)
 // https://github.com/BurntSushi/toml/issues/121
 type DeviceInfo struct {
-	Deviceinfo_append_dtb                      string
-	Deviceinfo_arch                            string
-	Deviceinfo_bootimg_append_seandroidenforce string
-	Deviceinfo_bootimg_blobpack                string
-	Deviceinfo_bootimg_dtb_second              string
-	Deviceinfo_bootimg_mtk_mkimage             string
-	Deviceinfo_bootimg_pxa                     string
-	Deviceinfo_bootimg_qcdt                    string
-	Deviceinfo_dtb                             string
-	Deviceinfo_flash_offset_base               string
-	Deviceinfo_flash_offset_kernel             string
-	Deviceinfo_flash_offset_ramdisk            string
-	Deviceinfo_flash_offset_second             string
-	Deviceinfo_flash_offset_tags               string
-	Deviceinfo_flash_pagesize                  string
-	Deviceinfo_generate_bootimg                string
-	Deviceinfo_generate_legacy_uboot_initfs    string
-	Deviceinfo_mesa_driver                     string
-	Deviceinfo_mkinitfs_postprocess            string
-	Deviceinfo_initfs_compression              string
-	Deviceinfo_kernel_cmdline                  string
-	Deviceinfo_legacy_uboot_load_address       string
-	Deviceinfo_modules_initfs                  string
-	Deviceinfo_flash_kernel_on_update          string
+	AppendDtb                     string `toml:"deviceinfo_append_dtb"`
+	Arch                          string `toml:"deviceinfo_arch"`
+	BootimgAppendSEAndroidEnforce string `toml:"deviceinfo_bootimg_append_seandroidenforce"`
+	BootimgBlobpack               string `toml:"deviceinfo_bootimg_blobpack"`
+	BootimgDtbSecond              string `toml:"deviceinfo_bootimg_dtb_second"`
+	BootimgMtkMkimage             string `toml:"deviceinfo_bootimg_mtk_mkimage"`
+	BootimgPxa                    string `toml:"deviceinfo_bootimg_pxa"`
+	BootimgQcdt                   string `toml:"deviceinfo_bootimg_qcdt"`
+	Dtb                           string `toml:"deviceinfo_dtb"`
+	FlashKernelOnUpdate           string `toml:"deviceinfo_flash_kernel_on_update"`
+	FlashOffsetBase               string `toml:"deviceinfo_flash_offset_base"`
+	FlashOffsetKernel             string `toml:"deviceinfo_flash_offset_kernel"`
+	FlashOffsetRamdisk            string `toml:"deviceinfo_flash_offset_ramdisk"`
+	FlashOffsetSecond             string `toml:"deviceinfo_flash_offset_second"`
+	FlashOffsetTags               string `toml:"deviceinfo_flash_offset_tags"`
+	FlashPagesize                 string `toml:"deviceinfo_flash_pagesize"`
+	GenerateBootimg               string `toml:"deviceinfo_generate_bootimg"`
+	GenerateLegacyUbootInitfs     string `toml:"deviceinfo_generate_legacy_uboot_initfs"`
+	InitfsCompression             string `toml:"deviceinfo_initfs_compression"`
+	KernelCmdline                 string `toml:"deviceinfo_kernel_cmdline"`
+	LegacyUbootLoadAddress        string `toml:"deviceinfo_legacy_uboot_load_address"`
+	MesaDriver                    string `toml:"deviceinfo_mesa_driver"`
+	MkinitfsPostprocess           string `toml:"deviceinfo_mkinitfs_postprocess"`
+	ModulesInitfs                 string `toml:"deviceinfo_modules_initfs"`
 }
 
 func ReadDeviceinfo() (DeviceInfo, error) {
@@ -47,8 +47,16 @@ func ReadDeviceinfo() (DeviceInfo, error) {
 		return deviceinfo, errors.New("Unable to find deviceinfo: " + file)
 	}
 
-	if _, err := toml.DecodeFile(file, &deviceinfo); err != nil {
+	fd, err := os.Open(file)
+	if err != nil {
 		return deviceinfo, err
 	}
+	defer fd.Close()
+	// contents,_ := toml.LoadFile(file)
+	decoder := toml.NewDecoder(fd)
+	if err := decoder.Decode(&deviceinfo); err != nil {
+		return deviceinfo, err
+	}
+
 	return deviceinfo, nil
 }
