@@ -34,7 +34,7 @@ func main() {
 		log.Print("NOTE: deviceinfo (from device package) not installed yet, " +
 			"not building the initramfs now (it should get built later " +
 			"automatically.)")
-		os.Exit(0)
+		return
 	}
 
 	var outDir string
