@@ -27,9 +27,11 @@ gofmt linting:
   allow_failure: true
   <<: *only-default
   before_script:
-    - apk -q add go
+    # specific mirror used because staticcheck hasn't made it to the other mirrors yet...
+    - apk -q update --repository http://dl-4.alpinelinux.org/alpine/edge/testing
+    - apk -q add --repository http://dl-4.alpinelinux.org/alpine/edge/testing go staticcheck
   script:
-    - .gitlab-ci/check_gofmt.sh
+    - .gitlab-ci/check_linting.sh
 
 build:
   stage: build
