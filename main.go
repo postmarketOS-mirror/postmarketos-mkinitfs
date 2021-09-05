@@ -125,19 +125,6 @@ func bootDeploy(workDir string, outDir string) error {
 	return nil
 }
 
-func createInitfsRootDirs(initfsRoot string) {
-	dirs := []string{
-		"/bin", "/sbin", "/usr/bin", "/usr/lib", "/usr/sbin", "/proc", "/sys",
-		"/dev", "/tmp", "/lib", "/boot", "/sysroot", "/etc",
-	}
-
-	for _, dir := range dirs {
-		if err := os.MkdirAll(filepath.Join(initfsRoot, dir), os.FileMode(0775)); err != nil {
-			log.Fatal(err)
-		}
-	}
-}
-
 func exists(file string) bool {
 	if _, err := os.Stat(file); err == nil {
 		return true
