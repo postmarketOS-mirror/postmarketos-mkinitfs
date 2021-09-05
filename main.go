@@ -461,14 +461,12 @@ func getInitfsModules(files misc.StringSet, devinfo deviceinfo.DeviceInfo, kerne
 					return err
 				}
 			}
-			continue
 		} else if dir == "" {
 			// item is a module name
 			if err := getModule(files, file, modDir); err != nil {
 				log.Print("Unable to get module: ", file)
 				return err
 			}
-			continue
 		} else {
 			log.Printf("Unknown module entry: %q", item)
 		}
