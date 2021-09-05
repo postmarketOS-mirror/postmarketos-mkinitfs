@@ -444,7 +444,9 @@ func getInitfsModules(files misc.StringSet, devinfo deviceinfo.DeviceInfo, kerne
 
 	modDir := filepath.Join("/lib/modules", kernelVer)
 	if !exists(modDir) {
-		return errors.New("Kernel module directory not found: " + modDir)
+		// dir /lib/modules/<kernel> if kernel built without module support, so just print a message
+		log.Printf("-- kernel module directory not found: %q, not including modules", modDir)
+		return nil
 	}
 
 	// modules.* required by modprobe
