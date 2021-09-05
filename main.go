@@ -112,7 +112,7 @@ func bootDeploy(workDir string, outDir string) error {
 		"-o", outDir,
 		"initramfs-extra")
 	if !exists(cmd.Path) {
-		return errors.New("boot-deploy command not found.")
+		return errors.New("boot-deploy command not found")
 	}
 
 	cmd.Stdout = os.Stdout
@@ -507,7 +507,7 @@ func getKernelReleaseFile() (string, error) {
 	files, _ := filepath.Glob("/usr/share/kernel/*/kernel.release")
 	// only one kernel flavor supported
 	if len(files) != 1 {
-		return "", errors.New(fmt.Sprintf("Only one kernel release/flavor is supported, found: %q", files))
+		return "", fmt.Errorf("only one kernel release/flavor is supported, found: %q", files)
 	}
 
 	return files[0], nil
@@ -676,9 +676,7 @@ func getModuleDeps(modName string, modDir string) ([]string, error) {
 		if modName != filepath.Base(stripExts(fields[0])) {
 			continue
 		}
-		for _, modPath := range fields {
-			deps = append(deps, modPath)
-		}
+		deps = append(deps, fields...)
 	}
 	if err := s.Err(); err != nil {
 		log.Print("Unable to get module + dependencies: ", modName)
