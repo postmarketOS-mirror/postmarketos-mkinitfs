@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"debug/elf"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -17,7 +18,6 @@ import (
 	"strings"
 	"time"
 
-	"git.sr.ht/~sircmpwn/getopt"
 	"gitlab.com/postmarketOS/postmarketos-mkinitfs/pkgs/archive"
 	"gitlab.com/postmarketOS/postmarketos-mkinitfs/pkgs/deviceinfo"
 	"gitlab.com/postmarketOS/postmarketos-mkinitfs/pkgs/misc"
@@ -37,12 +37,8 @@ func main() {
 		return
 	}
 
-	var outDir string
-	getopt.StringVar(&outDir, "d", "/boot", "Directory to output initfs(-extra) and other boot files, default: /boot")
-
-	if err := getopt.Parse(); err != nil {
-		log.Fatal(err)
-	}
+	outDir := flag.String("d", "/boot", "Directory to output initfs(-extra) and other boot files")
+	flag.Parse()
 
 	defer timeFunc(time.Now(), "mkinitfs")
 
@@ -63,7 +59,7 @@ func main() {
 	defer os.RemoveAll(workDir)
 
 	log.Print("Generating for kernel version: ", kernVer)
-	log.Print("Output directory: ", outDir)
+	log.Print("Output directory: ", *outDir)
 
 	if err := generateInitfs("initramfs", workDir, kernVer, devinfo); err != nil {
 		log.Fatal("generateInitfs: ", err)
@@ -74,7 +70,7 @@ func main() {
 	}
 
 	// Final processing of initramfs / kernel is done by boot-deploy
-	if err := bootDeploy(workDir, outDir); err != nil {
+	if err := bootDeploy(workDir, *outDir); err != nil {
 		log.Fatal("bootDeploy: ", err)
 	}
 
