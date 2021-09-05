@@ -29,12 +29,17 @@ func timeFunc(start time.Time, name string) {
 }
 
 func main() {
-	devinfo, err := deviceinfo.ReadDeviceinfo()
-	if err != nil {
+	deviceinfoFile := "/etc/deviceinfo"
+	if !exists(deviceinfoFile) {
 		log.Print("NOTE: deviceinfo (from device package) not installed yet, " +
 			"not building the initramfs now (it should get built later " +
 			"automatically.)")
 		return
+	}
+
+	devinfo, err := deviceinfo.ReadDeviceinfo(deviceinfoFile)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	outDir := flag.String("d", "/boot", "Directory to output initfs(-extra) and other boot files")
