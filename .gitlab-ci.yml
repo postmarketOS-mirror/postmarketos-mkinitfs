@@ -1,7 +1,7 @@
 ---
 
 # global settings
-image: alpine:latest
+image: alpine:edge
 
 stages:
   - lint
