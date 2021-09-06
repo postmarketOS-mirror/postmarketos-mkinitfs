@@ -47,10 +47,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	// temporary working dir
 	workDir, err := ioutil.TempDir("", "mkinitfs")
 	if err != nil {
