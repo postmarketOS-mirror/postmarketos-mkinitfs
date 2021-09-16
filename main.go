@@ -86,18 +86,29 @@ func bootDeploy(workDir string, outDir string) error {
 	if len(kernels) == 0 {
 		return errors.New("Unable to find any kernels at " + filepath.Join(outDir, "vmlinuz*"))
 	}
-	kernFile, err := os.Open(kernels[0])
+
+	// Pick a kernel that does not have suffixes added by boot-deploy
+	var kernFile string
+	for _, f := range kernels {
+		if strings.HasSuffix(f, "-dtb") || strings.HasSuffix(f, "-mtk") {
+			continue
+		}
+		kernFile = f
+		break
+	}
+
+	kernFd, err := os.Open(kernFile)
 	if err != nil {
 		return err
 	}
-	defer kernFile.Close()
+	defer kernFd.Close()
 
 	kernFileCopy, err := os.Create(filepath.Join(workDir, "vmlinuz"))
 	if err != nil {
 		return err
 	}
 
-	if _, err = io.Copy(kernFileCopy, kernFile); err != nil {
+	if _, err = io.Copy(kernFileCopy, kernFd); err != nil {
 		return err
 	}
 	kernFileCopy.Close()
