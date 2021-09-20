@@ -657,14 +657,7 @@ func getModuleDeps(modName string, modulesDep io.Reader) ([]string, error) {
 
 	// split the module name on - and/or _, build a regex for matching
 	splitRe := regexp.MustCompile("[-_]+")
-	var modNameReStr string
-	for _, s := range splitRe.Split(modName, -1) {
-		if modNameReStr != "" {
-			modNameReStr += "[-_]+" + s
-		} else {
-			modNameReStr = s
-		}
-	}
+	modNameReStr := splitRe.ReplaceAllString(modName, "[-_]+")
 	re := regexp.MustCompile("^" + modNameReStr + "$")
 
 	s := bufio.NewScanner(modulesDep)
