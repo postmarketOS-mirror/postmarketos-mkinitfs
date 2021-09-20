@@ -665,7 +665,7 @@ func getModuleDeps(modName string, modulesDep io.Reader) ([]string, error) {
 			modNameReStr = s
 		}
 	}
-	re := regexp.MustCompile(modNameReStr)
+	re := regexp.MustCompile("^" + modNameReStr + "$")
 
 	s := bufio.NewScanner(modulesDep)
 	for s.Scan() {
