@@ -414,6 +414,7 @@ func getInitfsFiles(files misc.StringSet, devinfo deviceinfo.DeviceInfo) error {
 		"/usr/sbin/telnetd":   false,
 		"/sbin/kpartx":        false,
 		"/etc/deviceinfo":     false,
+		"/sbin/modprobe":      false,
 	}
 
 	// Hook files & scripts
